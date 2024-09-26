@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+        #chat-container { width: 100%; max-width: 600px; margin: 0 auto; padding-top: 50px; }
+        #messages { list-style-type: none; margin: 0; padding: 0; height: 300px; overflow-y: scroll; background: #fff; border: 1px solid #ccc; padding: 10px; }
+        #messages li { padding: 8px 10px; margin-bottom: 10px; background: #ececec; border-radius: 5px; }
+        #form { display: flex; margin-top: 20px; }
+        #input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        #send { padding: 10px 20px; background: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+        #send:hover { background: #0056b3; }
+        /* Add styles for forms */
+        .form-container { margin-top: 20px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; }
+        button { padding: 10px; background: #28a745; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <ul id="messages"></ul>
+        <form id="form" action="">
+            <input id="input" autocomplete="off" placeholder="Type a message..." />
+            <button id="send">Send</button>
+        </form>
+    </div>
+
+    <!-- Registration Form -->
+    <div class="form-container">
+        <h2>Register</h2>
+        <form id="registrationForm">
+            <input type="text" id="regUsername" placeholder="Username" required>
+            <input type="password" id="regPassword" placeholder="Password" required>
+            <button type="submit">Register</button>
+        </form>
+    </div>
+
+    <!-- Login Form -->
+    <div class="form-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Username" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const form = document.getElementById('form');
+        const input = document.getElementById('input');
+        const messages = document.getElementById('messages');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (input.value) {
+                socket.emit('chat message', input.value);  // Send message to server
+                input.value = '';
+            }
+        });
+
+        socket.on('chat message', function(msg) {
+            const item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        // Handle Registration Form Submission
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+
+            // Send a POST request to the registration endpoint
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+            console.log(data); // Handle the response, e.g., show a message to the user
+        });
+
+        // Handle Login Form Submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Send a POST request to the login endpoint
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+            console.log(data); // Handle the response, e.g., show a message to the user
+        });
+    </script>
+</body>
+</html>
+
+
